@@ -11,3 +11,4 @@ FetchContent_MakeAvailable(googletest)
 
 # Add tasks
 add_subdirectory(tasks)
+add_subdirectory(tasks_hash_tables)

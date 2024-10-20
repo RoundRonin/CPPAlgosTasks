@@ -34,3 +34,10 @@
 
 build
 */build
+tasks_*/*/build/
+
+# Ignore all test and executables
+tasks*/*/exec_*
+tasks*/*/test_*
+!tasks*/*/exec_*.cpp
+!tasks*/*/test_*.cpp
