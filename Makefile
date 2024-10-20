@@ -20,8 +20,16 @@ clean-old:
 
 
 run:
-	@./tasks/task1/name1
+	@./tasks/task1/exec_hello_world
+	@./tasks_hash_tables/task1_what_is_a_set/exec_what_is_a_set
+
+test:
+	@./tasks/task1/test_hello_world
+	@./tasks_hash_tables/task1_what_is_a_set/test_what_is_a_set
 
 clean:
 	@rm -rf build
-	@find . -name 'name1' -delete
+	@find . -name 'exec_hello_world' -delete
+	@find . -name 'exec_what_is_a_set' -delete
+	@find . -name 'test_hello_world' -delete
+	@find . -name 'test_what_is_a_set' -delete
