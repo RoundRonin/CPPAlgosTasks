@@ -1,6 +1,7 @@
-#include "process_input.h"
 #include <iostream>
 #include <string>
+
+#include "process_input.h"
 
 std::string processInput(int input) {
     if (input == 3123321) {
@@ -11,10 +12,4 @@ std::string processInput(int input) {
     return "UNDEFINED";
 }
 
-int main() {
-    int input;
-    while (std::cin >> input) {
-        std::cout << processInput(input) << std::endl;
-    }
-    return 0;
-} 
+int main() {}

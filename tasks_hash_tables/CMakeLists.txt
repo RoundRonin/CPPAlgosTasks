@@ -1,1 +1,6 @@
-add_subdirectory(task1_what_is_a_set)
+file(GLOB SUBDIRS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *)
+foreach(SUBDIR ${SUBDIRS})
+    if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${SUBDIR})
+        add_subdirectory(${SUBDIR})
+    endif()
+endforeach()
