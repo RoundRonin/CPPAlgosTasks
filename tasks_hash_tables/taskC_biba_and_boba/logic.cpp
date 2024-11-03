@@ -1,59 +1,70 @@
+#include <climits>
 #include <cmath>
 #include <iostream>
 
-class ChairPairs {
-   private:
-    const static int HASH_TABLE_SIZE = 100003;
-
-    struct Entry {
-        int key;
-        int count;
-        Entry* next;
+// Hash table with BST implementation
+class HashTable {
+    struct TreeNode {
+        int data;
+        TreeNode *left, *right;
+        TreeNode(int val) : data(val), left(nullptr), right(nullptr) {}
     };
 
-    Entry* hashTable[HASH_TABLE_SIZE] = {nullptr};
+    TreeNode* insertNode(TreeNode* root, int data) {
+        if (!root) {
+            // std::cout << "Inserting " << data << std::endl;
+            return new TreeNode(data);
+        }
+        if (data < root->data) {
+            root->left = insertNode(root->left, data);
+        } else if (data > root->data) {
+            root->right = insertNode(root->right, data);
+        } else {
+            // std::cout << "Duplicate " << data << " not inserted" <<
+            // std::endl;
+        }
+        return root;
+    }
+
+    TreeNode* find(TreeNode* root, int data) {
+        while (root) {
+            if (data < root->data) {
+                root = root->left;
+            } else if (data > root->data) {
+                root = root->right;
+            } else {
+                return root;
+            }
+        }
+        return nullptr;
+    }
+
+    const static int HASH_TABLE_SIZE = 100003;
+    TreeNode* hashTable[HASH_TABLE_SIZE] = {nullptr};
 
     int hashFunction(int key) { return abs(key) % HASH_TABLE_SIZE; }
 
+   public:
     void insert(int key) {
         int index = hashFunction(key);
-        Entry* entry = hashTable[index];
-        while (entry != nullptr) {
-            if (entry->key == key) {
-                entry->count++;
-                return;
-            }
-            entry = entry->next;
-        }
-        Entry* newEntry = new Entry;
-        newEntry->key = key;
-        newEntry->count = 1;
-        newEntry->next = hashTable[index];
-        hashTable[index] = newEntry;
+        hashTable[index] = insertNode(hashTable[index], key);
     }
 
     int search(int key) {
         int index = hashFunction(key);
-        Entry* entry = hashTable[index];
-        while (entry != nullptr) {
-            if (entry->key == key) {
-                return entry->count;
-            }
-            entry = entry->next;
-        }
-        return 0;
+        TreeNode* found = find(hashTable[index], key);
+        return found ? found->data : -1;  // Sentinel value for not found
     }
 
-   public:
     int findPairs(int N, int* S) {
         int count = 0;
-
         for (int i = 0; i < N; i++) {
             int diff = S[i] - i;
-            count += search(diff);
+            if (search(diff) != -1) {  // Check if found
+                count++;
+            }
             insert(diff);
         }
-
         return count;
     }
 };
@@ -66,8 +77,8 @@ int logic() {
         std::cin >> S[i];
     }
 
-    ChairPairs cp;
-    int result = cp.findPairs(N, S);
+    HashTable ht;
+    int result = ht.findPairs(N, S);
 
     std::cout << result << '\n';
 

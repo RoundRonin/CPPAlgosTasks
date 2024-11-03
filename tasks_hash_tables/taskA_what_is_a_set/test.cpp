@@ -34,6 +34,18 @@ TEST(CodeOutputTest, AnotherTest) {
     EXPECT_EQ(runCodeWithInput(input), expectedOutput);
 }
 
+TEST(CodeOutputTest, LastTest) {
+    std::string input = "3 1 4 3 3 2 1\n";
+    std::string expectedOutput = "NO\n";
+    EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+}
+
+TEST(CodeOutputTest, ReverseTest) {
+    std::string input = "3 1 2 2 2 4 1\n";
+    std::string expectedOutput = "NO\n";
+    EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+}
+
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

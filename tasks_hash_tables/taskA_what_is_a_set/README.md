@@ -22,6 +22,7 @@
 
 
 STDIN:
+```
 3
 1
 2
@@ -29,15 +30,20 @@ STDIN:
 3
 2
 1
+```
 
 STDOUT:
 YES
 
 STDIN:
+```
 1
 2
 3
+```
 
 STDOUT:
+```
 NO
+```
 

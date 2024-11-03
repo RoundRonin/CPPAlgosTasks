@@ -5,7 +5,6 @@
 
 #include "logic.cpp"
 
-// Function to simulate the execution of code.cpp
 std::string runCodeWithInput(const std::string& input) {
     std::istringstream iss(input);
     std::cin.rdbuf(iss.rdbuf());
@@ -14,7 +13,6 @@ std::string runCodeWithInput(const std::string& input) {
     std::streambuf* oldCoutStreamBuf = std::cout.rdbuf();
     std::cout.rdbuf(oss.rdbuf());
 
-    // Ensure the correct namespace is used
     logic();
 
     std::cout.rdbuf(oldCoutStreamBuf);
@@ -22,16 +20,57 @@ std::string runCodeWithInput(const std::string& input) {
     return oss.str();
 }
 
-// Example tests
 TEST(CodeOutputTest, SimpleTest) {
     std::string input = "6\n3 5 1 4 6 6\n";
     std::string expectedOutput = "1\n";
     EXPECT_EQ(runCodeWithInput(input), expectedOutput);
 }
 
-TEST(CodeOutputTest, AnotherTest) {
-    std::string input = "6\n1 3 5 7 9 11\n";
-    std::string expectedOutput = "/* expected result */\n";
+TEST(CodeOutputTest, SingleElement) {
+    std::string input = "1\n10\n";
+    std::string expectedOutput = "0\n";
+    EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+}
+
+TEST(CodeOutputTest, IdenticalHeights) {
+    std::string input = "5\n2 2 2 2 2\n";
+    std::string expectedOutput = "0\n";
+    EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+}
+
+TEST(CodeOutputTest, IncreasingHeights) {
+    std::string input = "5\n1 2 3 4 5\n";
+    std::string expectedOutput = "10\n";
+    EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+}
+
+TEST(CodeOutputTest, DecreasingHeights) {
+    std::string input = "5\n5 4 3 2 1\n";
+    std::string expectedOutput = "0\n";
+    EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+}
+
+TEST(CodeOutputTest, AlternatingHeights) {
+    std::string input = "6\n1 3 1 3 1 3\n";
+    std::string expectedOutput = "0\n";
+    EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+}
+
+TEST(CodeOutputTest, LargeNumbers) {
+    std::string input = "5\n100000 200000 300000 400000 500000\n";
+    std::string expectedOutput = "0\n";
+    EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+}
+
+TEST(CodeOutputTest, NegativeHeights) {
+    std::string input = "5\n-1 -2 -3 -4 -5\n";
+    std::string expectedOutput = "0\n";
+    EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+}
+
+TEST(CodeOutputTest, MixedHeights) {
+    std::string input = "6\n3 5 -1 4 0 6\n";
+    std::string expectedOutput = "1\n";
     EXPECT_EQ(runCodeWithInput(input), expectedOutput);
 }
 
