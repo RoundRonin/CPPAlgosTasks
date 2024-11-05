@@ -7,6 +7,11 @@ all:
 	@cmake -S . -B build
 	@cmake --build build
 
+all-deb:
+	@mkdir -p build
+	@cmake -S . -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
+	@cmake --build build 
+
 clean-old:
 	rm -rf build
 
