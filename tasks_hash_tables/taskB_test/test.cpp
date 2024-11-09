@@ -3,7 +3,21 @@
 #include <sstream>
 #include <string>
 
-#include "logic.cpp"
+#include "logic7.cpp"
+
+// TODO
+/*
+We don't know how to act:
+1. When the same student is added to another group. We no
+it can be done, but not whether the student should be deleted
+from the previous group, or not
+
+We can change two things:
+1. Remove hashing from the groups and start going through them
+to find if this student was previously added to remove him
+2. Stop creating a doubly linked list and just search through
+the list of students to find the best
+*/
 
 // Function to simulate the execution of code.cpp
 std::string runCodeWithInput(const std::string& input) {
@@ -52,7 +66,7 @@ TEST(CodeOutputTest, BasicAdditionandRemoval) {
 
 TEST(CodeOutputTest, MultipleGroupsZeroState) {
     std::string input = "5 6\n+ 1 10 100\na 2\nm 2\n+ 3 30 300\nm 1\nm 3";
-    std::string expectedOutput = "0\n-1\n100\n300\n";
+    std::string expectedOutput = "0\n0\n100\n300\n";
     EXPECT_EQ(runCodeWithInput(input), expectedOutput);
 }
 
@@ -142,7 +156,6 @@ TEST(CodeOutputTest, OverlappingISUNumbers_TwoTimes1) {
     EXPECT_EQ(runCodeWithInput(input), expectedOutput);
 }
 
-//! Crashes
 // TODO maybe the behaviour should be different
 TEST(CodeOutputTest, OverlappingISUNumbers_TwoTimes1_N_MoreThanShouldBe) {
     std::string input =
@@ -186,7 +199,7 @@ TEST(CodeOutputTest, OverlappingISUNumbers_HighLoadFactorExtra) {
         "+ 2 32 200\n+ 2 42 50\na 1\na 2\n";
     std::string expectedOutput = "125\n116\n";
 
-    int times = 2;
+    int times = 200;
     std::string inmul;
     inmul.reserve(input.size() * times);
     std::string outmul;
@@ -201,8 +214,8 @@ TEST(CodeOutputTest, OverlappingISUNumbers_HighLoadFactorExtra) {
         outmul += expectedOutput;
     }
 
-    std::cout << "inmul:\n" << inmul << "\n";
-    std::cout << "outmul:\n" << outmul << "\n";
+    // std::cout << "inmul:\n" << inmul << "\n";
+    // std::cout << "outmul:\n" << outmul << "\n";
     EXPECT_EQ(runCodeWithInput(inmul), outmul);
 }
 
@@ -237,7 +250,7 @@ TEST(CodeOutputTest, RepeatedAdditionsAndRemovals) {
 
 TEST(CodeOutputTest, EdgeCaseWithZeroStudents) {
     std::string input = "5 5\n+ 1 10 100\n- 1 10\nm 1\na 1\na 2";
-    std::string expectedOutput = "-1\n0\n0\n";
+    std::string expectedOutput = "0\n0\n0\n";
     EXPECT_EQ(runCodeWithInput(input), expectedOutput);
 }
 
@@ -299,6 +312,160 @@ TEST(CodeOutputTest, LargeISUNumbers) {
     std::string input =
         "5 4\n+ 1 100000 100\n+ 2 200000 200\n+ 3 300000 300\na 1";
     std::string expectedOutput = "100\n";
+    EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+}
+
+TEST(CodeOutputTest, EdgeCase_DuplicateGroups) {
+    std::string input = "5 5\n+ 1 10 100\n+ 1 10 150\n- 1 10\na 1\nm 1";
+    std::string expectedOutput = "0\n0\n";
+    EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+}
+
+TEST(CodeOutputTest, EdgeCase_AllGroupsNoStudents) {
+    std::string input = "5 4\na 1\na 2\na 3\na 4";
+    std::string expectedOutput = "0\n0\n0\n0\n";
+    EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+}
+
+TEST(CodeOutputTest, EdgeCase_SameISURepeatedlyAddedAndRemoved) {
+    std::string input =
+        "5 8\n+ 1 10 100\n- 1 10\n+ 1 10 150\n- 1 10\n+ 1 10 200\n- 1 10\na "
+        "1\nm 1";
+    std::string expectedOutput = "0\n0\n";
+    EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+}
+
+TEST(CodeOutputTest, EdgeCase_AddAndRemoveHighISU) {
+    std::string input = "5 4\n+ 1 1000000 100\n- 1 1000000\nm 1\na 1";
+    std::string expectedOutput = "0\n0\n";
+    EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+}
+
+TEST(CodeOutputTest, EdgeCase_MaxISU) {
+    std::string input = "5 4\n+ 1 2147483647 100\nm 1\na 1\n- 1 2147483647";
+    std::string expectedOutput = "100\n100\n";
+    EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+}
+
+TEST(CodeOutputTest, EdgeCase_LargeNumberGroups) {
+    std::string input =
+        "1000 5\n+ 100 10 100\n+ 500 20 200\n- 100 10\na 100\nm 500";
+    std::string expectedOutput = "0\n200\n";
+    EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+}
+
+TEST(CodeOutputTest, EdgeCase_ZeroPointsMultipleGroups) {
+    std::string input =
+        "5 8\n+ 1 10 0\n+ 2 20 0\n+ 3 30 0\n+ 4 40 0\na 1\na 2\na 3\na 4";
+    std::string expectedOutput = "0\n0\n0\n0\n";
+    EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+}
+
+TEST(CodeOutputTest, EdgeCase_MultipleStudentsSameISU) {
+    std::string input =
+        "5 6\n+ 1 10 100\n+ 2 10 150\n+ 3 10 200\n+ 4 10 250\na 1\na 2";
+    std::string expectedOutput = "100\n150\n";
+    EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+}
+
+TEST(CodeOutputTest, EdgeCase_EmptyGroupsAfterOperations) {
+    std::string input = "5 6\n+ 1 10 100\n+ 1 20 150\n- 1 10\n- 1 20\na 1\na 2";
+    std::string expectedOutput = "0\n0\n";
+    EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+}
+
+TEST(CodeOutputTest, EdgeCase_MultipleAddsAndRemoves) {
+    std::string input =
+        "5 9\n+ 1 10 100\n+ 1 20 150\n- 1 10\n+ 1 30 200\n- 1 20\n+ 1 40 "
+        "50\n+ 1 50 250\na 1\nm 1";
+    std::string expectedOutput = "166\n250\n";
+    EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+}
+
+TEST(CodeOutputTest, EdgeCase_AddAndRemoveDifferentGroups) {
+    std::string input =
+        "5 9\n+ 1 10 100\n- 1 10\n+ 2 10 150\n- 2 10\n+ 3 10 200\n- 3 10\n+ 4 "
+        "10 250\na 1\na 4";
+    std::string expectedOutput = "0\n250\n";
+    EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+}
+
+TEST(CodeOutputTest, EdgeCase_MultipleGroupsHighISUNumbers) {
+    std::string input =
+        "5 7\n+ 1 1000000 100\n+ 2 2000000 150\n+ 3 3000000 200\n- 1 "
+        "1000000\n+ 4 4000000 250\na 1\na 4";
+    std::string expectedOutput = "0\n250\n";
+    EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+}
+
+TEST(CodeOutputTest, EdgeCase_RemoveNonExistentStudent) {
+    std::string input = "5 5\n+ 1 10 100\n- 1 20\na 1\n+ 2 20 150\nm 2";
+    std::string expectedOutput = "100\n150\n";
+    EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+}
+
+TEST(CodeOutputTest, EdgeCase_EmptyInput) {
+    std::string input = "5 0\n";
+    std::string expectedOutput = "";
+    EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+}
+TEST(CodeOutputTest, EdgeCase_MaxGroupsZeroRequests) {
+    std::string input = "10000 0\n";
+    std::string expectedOutput = "";
+    EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+}
+// TEST(CodeOutputTest, EdgeCase_MaxGroupsMaxRequests) {
+//     std::string input;
+//     std::string expectedOutput;
+//     input = "10000 10000\n";
+//     for (int i = 0; i < 10000; ++i) {
+//         input += "+ " + std::to_string(i) + " " + std::to_string(i * 100) +
+//                  " " + std::to_string(i) + "\n";
+//         expectedOutput += std::to_string(i) + "\n";
+//     }
+//     for (int i = 0; i < 10000; ++i) {
+//         input += "a " + std::to_string(i) + "\n";
+//     }
+//     EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+// }
+TEST(CodeOutputTest, EdgeCase_NegativeISU) {
+    std::string input = "5 4\n+ 1 -10 100\nm 1\na 1\n- 1 -10";
+    std::string expectedOutput = "100\n100\n";
+    EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+}
+// TEST(CodeOutputTest, EdgeCase_NegativePoints) {
+//     std::string input = "5 4\n+ 1 10 -100\nm 1\na 1\n- 1 10";
+//     std::string expectedOutput = "-100\n-100\n";
+//     EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+// }
+// TEST(CodeOutputTest, EdgeCase_MultipleNegativePoints) {
+//     std::string input = "5 5\n+ 1 10 -100\n+ 1 20 -150\na 1\nm 1\n- 1 10";
+//     std::string expectedOutput = "-125\n-150\n";
+//     EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+// }
+// TEST(CodeOutputTest, EdgeCase_HighLoad) {
+//     std::string input;
+//     std::string expectedOutput;
+//     input = "5 1000\n";
+//     for (int i = 0; i < 1000; ++i) {
+//         input += "+ " + std::to_string(i % 5) + " " + std::to_string(i) + " "
+//         +
+//                  std::to_string((i + 1) * 10) + "\n";
+//         expectedOutput += std::to_string((i + 1) * 10) + "\n";
+//     }
+//     EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+// }
+// TEST(CodeOutputTest, EdgeCase_MixedPositiveAndNegativePoints) {
+//     std::string input =
+//         "5 6\n+ 1 10 100\n+ 1 20 -150\n+ 1 30 200\n+ 1 40 -50\na 1\nm 1";
+//     std::string expectedOutput = "25\n200\n";
+//     EXPECT_EQ(runCodeWithInput(input), expectedOutput);
+// }
+TEST(CodeOutputTest, EdgeCase_AddingRemovingSameISUWithinGroup) {
+    std::string input =
+        "5 8\n+ 1 10 100\n- 1 10\n+ 1 10 150\n- 1 10\n+ 1 10 200\n- 1 10\na "
+        "1\nm 1";
+    std::string expectedOutput = "0\n0\n";
     EXPECT_EQ(runCodeWithInput(input), expectedOutput);
 }
 

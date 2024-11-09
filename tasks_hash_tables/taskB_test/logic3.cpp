@@ -14,8 +14,6 @@ class HashTable {
                   "T must inherit from IHashable");
     int EMPTY = INT32_MIN;
     int delim = 1;
-    int HASH_TABLE_SIZE;
-    T** hashTable;
 
     int hashFunction(int key) {
         // key = (key >> 16) ^ key;
@@ -46,6 +44,9 @@ class HashTable {
     }
 
    public:
+    int HASH_TABLE_SIZE;
+    T** hashTable;
+
     HashTable(int size) {
         HASH_TABLE_SIZE = 2 * size + 10;
         hashTable = new T*[HASH_TABLE_SIZE];
@@ -89,88 +90,55 @@ class HashTable {
 class Group : public IHashable {
     struct Student : public IHashable {
         int points = 0;
-        Student* previousTop = nullptr;
-        Student* newTop = nullptr;
-
         Student() : IHashable{-1, true}, points(-1) {}
-
         Student(int value, int points)
             : IHashable{value, false}, points(points) {}
     };
 
-    HashTable<Student>* students;
-    Student* CurrentTop;
+    HashTable<Student> students;
     int totalScore;
     int numberOfStudents;
 
    public:
     Group(int groupId)
-        : IHashable{groupId, false}, totalScore(0), numberOfStudents(0) {
-        students = new HashTable<Student>(10000);
-        CurrentTop = nullptr;
-    }
-
-    // ~Group() { delete students; }
+        : IHashable{groupId, false},
+          students(100),
+          totalScore(0),
+          numberOfStudents(0) {}
 
     int GetAvarageScore() {
         return numberOfStudents == 0 ? 0 : totalScore / numberOfStudents;
     }
 
     void RemoveStudent(int isu) {
-        Student* removedStudent = students->Remove(isu);
+        Student* removedStudent = students.Remove(isu);
         if (removedStudent != nullptr) {
             totalScore -= removedStudent->points;
             numberOfStudents--;
-
-            if (removedStudent->newTop != nullptr) {
-                removedStudent->newTop->previousTop =
-                    removedStudent->previousTop;
-            } else {
-                CurrentTop = removedStudent->previousTop;
-            }
-            if (removedStudent->previousTop != nullptr) {
-                removedStudent->previousTop->newTop = removedStudent->newTop;
-            }
-            // delete removedStudent;
         }
     }
 
     void AddStudent(int isu, int points) {
-        // Should check if the student is already present and remove the student
-        // beforehand
-        Student* student = students->Search(isu);
+        Student* student = students.Search(isu);
         if (student) {
             RemoveStudent(student->value);
         }
 
         Student* newStudent = new Student(isu, points);
-        students->Insert(newStudent);
+        students.Insert(newStudent);
         totalScore += points;
         numberOfStudents++;
-
-        if (CurrentTop == nullptr)
-            CurrentTop = newStudent;
-        else if (newStudent->points > CurrentTop->points) {
-            newStudent->previousTop = CurrentTop;
-            CurrentTop->newTop = newStudent;
-            CurrentTop = newStudent;
-        } else {
-            Student* current = CurrentTop;
-            while (current->previousTop != nullptr &&
-                   current->points > newStudent->points) {
-                current = current->previousTop;
-            }
-            if (current->previousTop == nullptr) {
-                current->previousTop = newStudent;
-            } else {
-                current->newTop->previousTop = newStudent;
-                current->previousTop->newTop = newStudent;
-            }
-        }
     }
 
     int FindTopStudent() {
-        return CurrentTop != nullptr ? CurrentTop->points : 0;
+        int maxPoints = 0;
+        for (int i = 0; i < students.HASH_TABLE_SIZE; i++) {
+            if (students.hashTable[i] && !students.hashTable[i]->isEmpty &&
+                students.hashTable[i]->points > maxPoints) {
+                maxPoints = students.hashTable[i]->points;
+            }
+        }
+        return maxPoints;
     }
 };
 
@@ -183,6 +151,13 @@ class Uni {
         return newGroup;
     }
 
+    struct GroupContainer {
+        Group* group = nullptr;
+        GroupContainer* prevGroup = nullptr;
+    };
+
+    GroupContainer* LastAdded = nullptr;
+
    public:
     Uni(int NumberOfGroups) { groups = new HashTable<Group>(NumberOfGroups); }
 
@@ -190,8 +165,23 @@ class Uni {
 
     Group* Find(int groupId) {
         Group* result = groups->Search(groupId);
-        if (!result) result = addGroup(groupId);
+        if (!result) {
+            result = addGroup(groupId);
+            if (!LastAdded)
+                LastAdded = new GroupContainer{result, nullptr};
+            else {
+                LastAdded = new GroupContainer{result, LastAdded};
+            }
+        }
         return result;
+    }
+
+    void RemoveStudentFromAllGroups(int isu) {
+        GroupContainer* current = LastAdded;
+        while (current != nullptr) {
+            current->group->RemoveStudent(isu);
+            current = current->prevGroup;
+        }
     }
 };
 
@@ -226,6 +216,7 @@ int logic() {
                 if (group < 0) group = 0;
                 if (isu < 0) isu = 0;
                 if (points < 0) points = 0;
+                uni.RemoveStudentFromAllGroups(isu);
                 uni.Find(group)->AddStudent(isu, points);
                 break;
             }
@@ -240,43 +231,4 @@ int logic() {
         }
     }
     return 0;
-}
-
-void logic(std::istream& in) {
-    int M, Q;
-    in >> M >> Q;
-    Uni uni = Uni(M);
-
-    char message;
-    int group = 0;
-    int isu = 0;
-    int points = 0;
-
-    for (int i = 0; i < Q; i++) {
-        in >> message;
-        switch (message) {
-            case 'a': {
-                in >> group;
-                std::cout << uni.Find(group)->GetAvarageScore() << '\n';
-                break;
-            }
-            case '-': {
-                in >> group >> isu;
-                uni.Find(group)->RemoveStudent(isu);
-                break;
-            }
-            case '+': {
-                in >> group >> isu >> points;
-                uni.Find(group)->AddStudent(isu, points);
-                break;
-            }
-            case 'm': {
-                in >> group;
-                std::cout << uni.Find(group)->FindTopStudent() << '\n';
-                break;
-            }
-            default:
-                break;
-        }
-    }
 }
