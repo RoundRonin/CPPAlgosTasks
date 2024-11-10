@@ -1,6 +1,6 @@
 #include <sstream>
 
-#include "logic7.cpp"
+#include "logic8.cpp"
 
 int main() {
     std::string input =
